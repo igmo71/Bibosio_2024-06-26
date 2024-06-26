@@ -1,5 +1,4 @@
 ﻿using Bibosio.WebApi.Interfaces;
-using Serilog;
 
 namespace Bibosio.WebApi.Common
 {

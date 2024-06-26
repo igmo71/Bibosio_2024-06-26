@@ -31,7 +31,7 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.0.0-beta.12" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.9.0-beta.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.2-dev-00338" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
@@ -39,7 +39,7 @@
   <ItemGroup>
     <Folder Include="EventChannel\" />
     <Folder Include="Logs\" />
-    <Folder Include="Modules\Todos\NewFolder\" />
+    <Folder Include="Modules\Todos\Data\Migrations\" />
     <Folder Include="Notification\" />
   </ItemGroup>
 

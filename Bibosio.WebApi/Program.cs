@@ -4,6 +4,7 @@ using Bibosio.WebApi.Interfaces;
 using Bibosio.WebApi.Modules.Todos;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -28,7 +29,8 @@ namespace Bibosio.WebApi
             builder.Services.AddSingleton<AppInstrumentation>();
 
             builder.Services.AddOpenTelemetry()
-                .ConfigureResource(resource => resource.AddService(serviceName))
+                .ConfigureResource(resource => resource
+                    .AddService(serviceName))
                 .WithTracing(tracing => tracing
                     .AddSource(activitySource.Name)
                     .AddSource(AppInstrumentation.ActivitySourceName)
@@ -45,9 +47,39 @@ namespace Bibosio.WebApi
                 .WithMetrics(metrics => metrics
                     .AddMeter(AppInstrumentation.MeterName)
                     //.AddAspNetCoreInstrumentation()
-                    .AddConsoleExporter()
-                );
+                    .AddConsoleExporter())
+                .WithLogging(logging =>
+                {
+                    logging
+                        .AddConsoleExporter()
+                        .AddOtlpExporter(exporterOptions =>
+                        {
+                            exporterOptions.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/logs");
+                            exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
+                            exporterOptions.Headers = "X-Seq-ApiKey=x4d4zxG37lHw9bSxP74B";
+                        });
+                })
+                ;
 
+            //builder.Services.AddLogging(logging => logging.AddOpenTelemetry(openTelemetryLoggerOptions =>
+            //{
+            //    openTelemetryLoggerOptions.SetResourceBuilder(
+            //        ResourceBuilder.CreateEmpty()
+            //            .AddService(serviceName)
+            //            .AddAttributes(new Dictionary<string, object>
+            //            {
+            //                ["deployment.environment"] = "development"
+            //            }));
+            //    openTelemetryLoggerOptions.IncludeScopes = true;
+            //    openTelemetryLoggerOptions.IncludeFormattedMessage = true;
+
+            //    openTelemetryLoggerOptions.AddOtlpExporter(exporter =>
+            //    {
+            //        exporter.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/logs");
+            //        exporter.Protocol = OtlpExportProtocol.HttpProtobuf;
+            //        exporter.Headers = "X-Seq-ApiKey=x4d4zxG37lHw9bSxP74B";
+            //    });
+            //}));
 
             builder.Services.AddSerilog(options =>
             {

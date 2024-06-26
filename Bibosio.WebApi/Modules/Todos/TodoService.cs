@@ -2,7 +2,6 @@
 using Bibosio.WebApi.Data;
 using Bibosio.WebApi.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
