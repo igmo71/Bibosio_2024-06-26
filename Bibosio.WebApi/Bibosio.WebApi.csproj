@@ -38,6 +38,8 @@
 
   <ItemGroup>
     <Folder Include="EventChannel\" />
+    <Folder Include="Logs\" />
+    <Folder Include="Modules\Todos\NewFolder\" />
     <Folder Include="Notification\" />
   </ItemGroup>
 

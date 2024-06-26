@@ -2,7 +2,7 @@
 
 namespace Bibosio.WebApi.Modules.Todos
 {
-    public class TodoCreated : Todo, IIntegrationEvent
+    public class TodoCreatedEvent : Todo, IIntegrationEvent
     {
         public Guid EventId { get; init; }
     }

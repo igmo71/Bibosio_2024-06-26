@@ -16,59 +16,54 @@ namespace Bibosio.WebApi
     {
         public static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateLogger();
-
-
+            //Log.Logger = new LoggerConfiguration()
+            //    .WriteTo.Console()
+            //    .CreateLogger();
 
             var builder = WebApplication.CreateBuilder(args);
 
-            //string serviceName = builder.Environment.ApplicationName;
-            //ActivitySource activitySource = new(serviceName);
+            string serviceName = builder.Environment.ApplicationName;
+            ActivitySource activitySource = new(serviceName);
 
-            string serviceName = "BibosioServiceName";
-            ActivitySource activitySource = new("BibosioActivitySource");
+            builder.Services.AddSingleton<AppInstrumentation>();
 
             builder.Services.AddOpenTelemetry()
                 .ConfigureResource(resource => resource.AddService(serviceName))
                 .WithTracing(tracing => tracing
                     .AddSource(activitySource.Name)
-                    .AddSource(Instrumentation.ActivitySourceName)
+                    .AddSource(AppInstrumentation.ActivitySourceName)
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation()
                     .AddConsoleExporter()
-                    .AddOtlpExporter(opt =>
+                    .AddOtlpExporter(options =>
                     {
-                        opt.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/traces");
-                        opt.Protocol = OtlpExportProtocol.HttpProtobuf;
-                        opt.Headers = "X-Seq-ApiKey=x4d4zxG37lHw9bSxP74B";
+                        options.Endpoint = new Uri("http://igmo-pc:5341/ingest/otlp/v1/traces");
+                        options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                        options.Headers = "X-Seq-ApiKey=x4d4zxG37lHw9bSxP74B";
                     }))
                 .WithMetrics(metrics => metrics
-                .AddMeter(Instrumentation.MeterName)
-                //    .AddAspNetCoreInstrumentation()
-                //    .AddConsoleExporter()
+                    .AddMeter(AppInstrumentation.MeterName)
+                    //.AddAspNetCoreInstrumentation()
+                    .AddConsoleExporter()
                 );
 
-            builder.Services.AddSingleton<Instrumentation>();
 
             builder.Services.AddSerilog(options =>
             {
-                options.ReadFrom.Configuration(builder.Configuration);
+                options
+                    .ReadFrom.Configuration(builder.Configuration)
+                    .WriteTo.Seq(serverUrl: "http://igmo-pc:5341", apiKey: "x4d4zxG37lHw9bSxP74B");
             });
-            Log.Information("Starting up");
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-                    .EnableDetailedErrors()
-                    .EnableSensitiveDataLogging()
-                    //.LogTo(Log.Debug)
-                    ;
-            });
-            //builder.Services.AddSqlServer<AppDbContext>(connectionString);
             //builder.Services.AddSqlite<AppDbContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
+            //builder.Services.AddSqlServer<AppDbContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
+            builder.Services.AddDbContext<AppDbContext>(options => options
+                .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+                .EnableDetailedErrors()
+                .EnableSensitiveDataLogging()
+                //.LogTo(Log.Debug)
+                );
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddEndpointsApiExplorer();

@@ -8,6 +8,7 @@ namespace Bibosio.WebApi.Modules.Todos
         {
             services.AddScoped<ITodoService, TodoService>();
             services.AddSingleton<ITodoEventChannel, TodoEventChannel>();
+            services.AddSingleton<TodoCounter>();
 
             return services;
         }

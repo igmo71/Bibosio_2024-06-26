@@ -8,21 +8,38 @@ using System.Diagnostics.Metrics;
 
 namespace Bibosio.WebApi.Modules.Todos
 {
-    public class TodoService(AppDbContext dbContext, IEventBus eventBus, ILogger<TodoService> logger, Instrumentation instrumentation) : ITodoService
+    public class TodoService : ITodoService
     {
-        private readonly AppDbContext _dbContext = dbContext;
-        private readonly IEventBus _eventBus = eventBus;
-        private readonly ILogger<TodoService> _logger = logger;
-        private readonly ActivitySource _activitySource = instrumentation.ActivitySource;
-        private readonly Counter<long> _todoCreatedCounter = instrumentation.TodoCreatedCounter;
+        private readonly AppDbContext _dbContext;
+        private readonly IEventBus _eventBus;
+        private readonly ILogger<TodoService> _logger;
+        private readonly ActivitySource _activitySource;
+        private readonly TodoCounter _counter;
+        private readonly Counter<long> _todoCreatedCounter;
+
+        public TodoService(
+            AppDbContext dbContext,
+        IEventBus eventBus,
+        ILogger<TodoService> logger,
+        AppInstrumentation appInstrumentation,
+        TodoCounter counter)
+        {
+            _dbContext = dbContext;
+            _eventBus = eventBus;
+            _logger = logger;
+            _activitySource = appInstrumentation.ActivitySource;
+            _counter = counter;
+            _todoCreatedCounter = appInstrumentation.TodoCreatedCounter;
+        }
 
         public async Task<IResult> Create(Todo todo)
         {
-            using var activity = _activitySource.StartActivity("Create Todo");
+            using var activity = _activitySource.StartActivity("CreateTodoActivity");
 
             _dbContext.Todos.Add(todo);
             await _dbContext.SaveChangesAsync();
 
+            _counter.TodoCreatedCounter.Add(1);
             _todoCreatedCounter.Add(1);
 
             _logger.LogDebug("{Method} {@Todo}", nameof(Create), todo);
@@ -35,14 +52,14 @@ namespace Bibosio.WebApi.Modules.Todos
 
         private async Task PublishTodoCreated(Todo todo)
         {
-            var todoEvent = new TodoCreated
+            var todoEvent = new TodoCreatedEvent
             {
                 EventId = Guid.NewGuid(),
                 Id = todo.Id,
                 Name = todo.Name,
                 IsComplete = todo.IsComplete
             };
-            await _eventBus.PublishAsync<TodoCreated>(todoEvent);
+            await _eventBus.PublishAsync<TodoCreatedEvent>(todoEvent);
         }
 
         public async Task<IResult> Delete(int id)
