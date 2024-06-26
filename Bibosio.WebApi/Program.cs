@@ -3,7 +3,12 @@ using Bibosio.WebApi.Data;
 using Bibosio.WebApi.Interfaces;
 using Bibosio.WebApi.Modules.Todos;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
+using System.Diagnostics;
 
 namespace Bibosio.WebApi
 {
@@ -11,11 +16,42 @@ namespace Bibosio.WebApi
     {
         public static void Main(string[] args)
         {
-            //Log.Logger = new LoggerConfiguration()
-            //    .WriteTo.Console()
-            //    .CreateLogger();
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
+
+
 
             var builder = WebApplication.CreateBuilder(args);
+
+            //string serviceName = builder.Environment.ApplicationName;
+            //ActivitySource activitySource = new(serviceName);
+
+            string serviceName = "BibosioServiceName";
+            ActivitySource activitySource = new("BibosioActivitySource");
+
+            builder.Services.AddOpenTelemetry()
+                .ConfigureResource(resource => resource.AddService(serviceName))
+                .WithTracing(tracing => tracing
+                    .AddSource(activitySource.Name)
+                    .AddSource(Instrumentation.ActivitySourceName)
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation()
+                    .AddConsoleExporter()
+                    .AddOtlpExporter(opt =>
+                    {
+                        opt.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/traces");
+                        opt.Protocol = OtlpExportProtocol.HttpProtobuf;
+                        opt.Headers = "X-Seq-ApiKey=x4d4zxG37lHw9bSxP74B";
+                    }))
+                .WithMetrics(metrics => metrics
+                .AddMeter(Instrumentation.MeterName)
+                //    .AddAspNetCoreInstrumentation()
+                //    .AddConsoleExporter()
+                );
+
+            builder.Services.AddSingleton<Instrumentation>();
 
             builder.Services.AddSerilog(options =>
             {

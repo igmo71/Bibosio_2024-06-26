@@ -6,15 +6,15 @@ namespace Bibosio.WebApi.Modules.Todos
     {
         public TodoEventChannel()
         {
-            var channel = Channel.CreateUnbounded<TodoEvent>();
+            var channel = Channel.CreateUnbounded<TodoCreated>();
             Reader = channel.Reader;
             Writer = channel.Writer;
         }
 
-        public ChannelReader<TodoEvent> Reader { get; set; }
-        public ChannelWriter<TodoEvent> Writer { get; set; }
+        public ChannelReader<TodoCreated> Reader { get; set; }
+        public ChannelWriter<TodoCreated> Writer { get; set; }
 
-        public async ValueTask Write(TodoEvent todoEvent)
+        public async ValueTask Write(TodoCreated todoEvent)
         {
             while (await Writer.WaitToWriteAsync())
             {

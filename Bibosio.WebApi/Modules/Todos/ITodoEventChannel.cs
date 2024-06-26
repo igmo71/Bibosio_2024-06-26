@@ -4,9 +4,9 @@ namespace Bibosio.WebApi.Modules.Todos
 {
     public interface ITodoEventChannel
     {
-        ChannelReader<TodoEvent> Reader { get; set; }
-        ChannelWriter<TodoEvent> Writer { get; set; }
+        ChannelReader<TodoCreated> Reader { get; set; }
+        ChannelWriter<TodoCreated> Writer { get; set; }
 
-        ValueTask Write(TodoEvent todoEvent);
+        ValueTask Write(TodoCreated todoEvent);
     }
 }

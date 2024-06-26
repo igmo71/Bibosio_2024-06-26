@@ -3,31 +3,46 @@ using Bibosio.WebApi.Data;
 using Bibosio.WebApi.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 
 namespace Bibosio.WebApi.Modules.Todos
 {
-    public class TodoService(AppDbContext dbContext, IEventBus eventBus, ILogger<TodoService> logger) : ITodoService
+    public class TodoService(AppDbContext dbContext, IEventBus eventBus, ILogger<TodoService> logger, Instrumentation instrumentation) : ITodoService
     {
         private readonly AppDbContext _dbContext = dbContext;
         private readonly IEventBus _eventBus = eventBus;
         private readonly ILogger<TodoService> _logger = logger;
+        private readonly ActivitySource _activitySource = instrumentation.ActivitySource;
+        private readonly Counter<long> _todoCreatedCounter = instrumentation.TodoCreatedCounter;
 
         public async Task<IResult> Create(Todo todo)
         {
+            using var activity = _activitySource.StartActivity("Create Todo");
+
             _dbContext.Todos.Add(todo);
             await _dbContext.SaveChangesAsync();
 
-            await _eventBus.PublishAsync<TodoEvent>(new TodoEvent
+            _todoCreatedCounter.Add(1);
+
+            _logger.LogDebug("{Method} {@Todo}", nameof(Create), todo);
+
+            await PublishTodoCreated(todo);
+
+            return TypedResults.Created($"/todoitems/{todo.Id}", todo);
+
+        }
+
+        private async Task PublishTodoCreated(Todo todo)
+        {
+            var todoEvent = new TodoCreated
             {
                 EventId = Guid.NewGuid(),
                 Id = todo.Id,
                 Name = todo.Name,
                 IsComplete = todo.IsComplete
-            });
-
-            _logger.LogDebug("{Method} {@Todo}", nameof(Create), todo);
-
-            return TypedResults.Created($"/todoitems/{todo.Id}", todo);
+            };
+            await _eventBus.PublishAsync<TodoCreated>(todoEvent);
         }
 
         public async Task<IResult> Delete(int id)
