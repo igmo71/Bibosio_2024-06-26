@@ -2,6 +2,8 @@ using Bibosio.WebApi.Common;
 using Bibosio.WebApi.Data;
 using Bibosio.WebApi.Interfaces;
 using Bibosio.WebApi.Modules.Todos;
+using Bibosio.WebApi.Modules.Todos.EventBus;
+using Bibosio.WebApi.Modules.Todos.EventBus.Events;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
@@ -105,6 +107,11 @@ namespace Bibosio.WebApi
             builder.Services.AddSingleton<IEventBus, AppEventBus>();
             builder.Services.AddHostedService<AppEventDispatcher>();
 
+            TodoEventDispatcher.TodoCreated += async (object? sender, TodoCreatedEvent e) => await TodoCreatedHandle(sender, e);
+            TodoEventDispatcher.TodoUpdated += async(object? sender, TodoUpdatedEvent e) => await TodoUpdatedHandle(sender, e);
+
+
+
             TodoModule.Register(builder.Services, builder.Configuration);
 
             var app = builder.Build();
@@ -115,11 +122,23 @@ namespace Bibosio.WebApi
                 app.UseSwaggerUI();
             }
 
-            //app.UseSerilogRequestLogging();
+            app.UseSerilogRequestLogging();
 
             TodoModule.MapEndpoints(app);
 
             app.Run();
+        }
+
+        private static async Task TodoCreatedHandle(object? sender, TodoCreatedEvent e)
+        {
+            await Task.Delay(1000);
+            Log.Debug("{TodoCreatedHandle} {@Event}", nameof(TodoCreatedHandle), e);
+        }
+
+        private static async Task TodoUpdatedHandle(object? sender, TodoUpdatedEvent e)
+        {
+            await Task.Delay(1000);
+            Log.Debug("{Method} {@Event}", nameof(TodoUpdatedHandle), e);
         }
     }
 }
