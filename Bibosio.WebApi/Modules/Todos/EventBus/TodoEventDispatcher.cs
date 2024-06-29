@@ -26,14 +26,14 @@ namespace Bibosio.WebApi.Modules.Todos.EventBus
 
                 try
                 {
-                    switch (integrationEvent.GetType().Name)
+                    switch (integrationEvent)
                     {
-                        case nameof(TodoCreatedEvent):
-                            await OnTodoCreated(integrationEvent);
+                        case TodoCreatedEvent todoCreatedEvent:
+                            await OnTodoCreated(todoCreatedEvent);
                             break;
 
-                        case nameof(TodoUpdatedEvent):
-                            await OnTodoUpdated(integrationEvent);
+                        case TodoUpdatedEvent todoUpdatedEvent:
+                            await OnTodoUpdated(todoUpdatedEvent);
                             break;
                     }
                 }
@@ -45,22 +45,22 @@ namespace Bibosio.WebApi.Modules.Todos.EventBus
 
         }
 
-        private async Task OnTodoCreated(IIntegrationEvent integrationEvent)
+        private async Task OnTodoCreated(TodoCreatedEvent todoCreatedEvent)
         {
-            await Task.Delay(1000);
-            _logger.LogDebug("{Method} {@IntegrationEvent}", nameof(OnTodoCreated), integrationEvent);
+            await Task.Delay(1000); // TODO: Remove in prod
+            _logger.LogDebug("{Method} {@TodoCreatedEvent}", nameof(OnTodoCreated), todoCreatedEvent);
 
             EventHandler<TodoCreatedEvent>? todoCreatedHandler = TodoCreated;
-            todoCreatedHandler?.Invoke(this, (TodoCreatedEvent)integrationEvent);
+            todoCreatedHandler?.Invoke(this, todoCreatedEvent);
         }
 
-        private async Task OnTodoUpdated(IIntegrationEvent integrationEvent)
+        private async Task OnTodoUpdated(TodoUpdatedEvent todoUpdatedEvent)
         {
-            await Task.Delay(1000);
-            _logger.LogDebug("{Method} {@IntegrationEvent}", nameof(OnTodoUpdated), integrationEvent);
+            await Task.Delay(1000); // TODO: Remove in prod
+            _logger.LogDebug("{Method} {@TodoUpdatedEvent}", nameof(OnTodoUpdated), todoUpdatedEvent);
 
             EventHandler<TodoUpdatedEvent>? todoUpdatedHandler = TodoUpdated;
-            todoUpdatedHandler?.Invoke(todoUpdatedHandler, (TodoUpdatedEvent)integrationEvent);
+            todoUpdatedHandler?.Invoke(todoUpdatedHandler, todoUpdatedEvent);
         }
     }
 }

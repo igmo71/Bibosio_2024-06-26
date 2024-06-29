@@ -107,7 +107,8 @@ namespace Bibosio.WebApi
             builder.Services.AddSingleton<IEventBus, AppEventBus>();
             builder.Services.AddHostedService<AppEventDispatcher>();
 
-            TodoEventDispatcher.TodoCreated += async (object? sender, TodoCreatedEvent e) => await TodoCreatedHandle(sender, e);
+            TodoEventDispatcher.TodoCreated += async (object? sender, TodoCreatedEvent e) => await TodoCreatedHandle1(sender, e);
+            TodoEventDispatcher.TodoCreated += async (object? sender, TodoCreatedEvent e) => await TodoCreatedHandle2(sender, e);
             TodoEventDispatcher.TodoUpdated += async(object? sender, TodoUpdatedEvent e) => await TodoUpdatedHandle(sender, e);
 
 
@@ -129,16 +130,25 @@ namespace Bibosio.WebApi
             app.Run();
         }
 
-        private static async Task TodoCreatedHandle(object? sender, TodoCreatedEvent e)
+        private static async Task TodoCreatedHandle1(object? sender, TodoCreatedEvent e)
         {
             await Task.Delay(1000);
-            Log.Debug("{TodoCreatedHandle} {@Event}", nameof(TodoCreatedHandle), e);
+            Log.Debug("{Method} {@TodoCreatedEvent} ", nameof(TodoCreatedHandle1), e);
+            await Task.Delay(1000);
         }
+
+        private static async Task TodoCreatedHandle2(object? sender, TodoCreatedEvent e)
+        {
+            await Task.Delay(1000);
+            Log.Debug("{Method} {@TodoCreatedEvent} ", nameof(TodoCreatedHandle2), e);
+            await Task.Delay(1000);
+        }
+
 
         private static async Task TodoUpdatedHandle(object? sender, TodoUpdatedEvent e)
         {
             await Task.Delay(1000);
-            Log.Debug("{Method} {@Event}", nameof(TodoUpdatedHandle), e);
+            Log.Debug("{Method} {@TodoUpdatedEvent} {@Sender}", nameof(TodoUpdatedHandle), e, sender);
         }
     }
 }
