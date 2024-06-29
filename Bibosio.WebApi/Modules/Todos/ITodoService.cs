@@ -1,4 +1,6 @@
-﻿namespace Bibosio.WebApi.Modules.Todos
+﻿using Bibosio.WebApi.Modules.Todos.Models;
+
+namespace Bibosio.WebApi.Modules.Todos
 {
     public interface ITodoService
     {

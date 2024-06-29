@@ -1,6 +1,6 @@
 ﻿using Bibosio.WebApi.Common;
 
-namespace Bibosio.WebApi.Modules.Todos
+namespace Bibosio.WebApi.Modules.Todos.Models
 {
     public class Todo : EntityBase
     {

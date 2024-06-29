@@ -8,8 +8,6 @@ namespace Bibosio.WebApi.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {}
 
-        public DbSet<Todo> Todos { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

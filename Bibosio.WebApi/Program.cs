@@ -105,7 +105,7 @@ namespace Bibosio.WebApi
             builder.Services.AddSingleton<IEventBus, EventBus>();
             builder.Services.AddHostedService<IntegrationEventProcessorJob>();
 
-            TodoModule.Register(builder.Services);
+            TodoModule.Register(builder.Services, builder.Configuration);
 
             var app = builder.Build();
 

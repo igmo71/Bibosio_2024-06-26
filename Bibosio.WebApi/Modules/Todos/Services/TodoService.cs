@@ -1,15 +1,16 @@
 ﻿using Bibosio.WebApi.Common;
-using Bibosio.WebApi.Data;
 using Bibosio.WebApi.Interfaces;
+using Bibosio.WebApi.Modules.Todos.Data;
+using Bibosio.WebApi.Modules.Todos.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace Bibosio.WebApi.Modules.Todos
+namespace Bibosio.WebApi.Modules.Todos.Services
 {
     public class TodoService : ITodoService
     {
-        private readonly AppDbContext _dbContext;
+        private readonly TodoDbContext _dbContext;
         private readonly IEventBus _eventBus;
         private readonly ILogger<TodoService> _logger;
         private readonly ActivitySource _activitySource;
@@ -17,11 +18,11 @@ namespace Bibosio.WebApi.Modules.Todos
         private readonly Counter<long> _todoCreatedCounter;
 
         public TodoService(
-            AppDbContext dbContext,
-        IEventBus eventBus,
-        ILogger<TodoService> logger,
-        AppInstrumentation appInstrumentation,
-        TodoCounter counter)
+            TodoDbContext dbContext,
+            IEventBus eventBus,
+            ILogger<TodoService> logger,
+            AppInstrumentation appInstrumentation,
+            TodoCounter counter)
         {
             _dbContext = dbContext;
             _eventBus = eventBus;
@@ -58,7 +59,7 @@ namespace Bibosio.WebApi.Modules.Todos
                 Name = todo.Name,
                 IsComplete = todo.IsComplete
             };
-            await _eventBus.PublishAsync<TodoCreatedEvent>(todoEvent);
+            await _eventBus.PublishAsync(todoEvent);
         }
 
         public async Task<IResult> Delete(int id)
