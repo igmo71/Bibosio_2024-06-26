@@ -1,5 +1,7 @@
 ﻿using Bibosio.WebApi.Interfaces;
 using Bibosio.WebApi.Modules.Todos.Data;
+using Bibosio.WebApi.Modules.Todos.EventBus;
+using Bibosio.WebApi.Modules.Todos.Interfaces;
 using Bibosio.WebApi.Modules.Todos.Models;
 using Bibosio.WebApi.Modules.Todos.Services;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +18,12 @@ namespace Bibosio.WebApi.Modules.Todos
                 .EnableSensitiveDataLogging()
                 );
             services.AddScoped<ITodoService, TodoService>();
-            services.AddSingleton<ITodoEventChannel, TodoEventChannel>();
+            
+            services.AddSingleton<ITodoEventChannel,TodoEventChannel>();
+            services.AddSingleton<ITodoEventBus,TodoEventBus>();
+            services.AddHostedService<TodoEventDispatcher> ();
+
+
             services.AddSingleton<TodoCounter>();
 
             return services;

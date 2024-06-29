@@ -7,7 +7,7 @@ namespace Bibosio.WebApi.Modules.Todos
     {
         public TodoCounter(AppInstrumentation appInstrumentation)
         {
-            TodoCreatedCounter = appInstrumentation.Meter.CreateCounter<long>("-------------------->>>todo.created", description: ">>>>>>>The number of Todo Created");
+            TodoCreatedCounter = appInstrumentation.Meter.CreateCounter<long>("--->>>todo.created", description: ">>>>The number of Todo Created");
         }
 
         public Counter<long> TodoCreatedCounter { get; }

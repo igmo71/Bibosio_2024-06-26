@@ -1,6 +1,6 @@
 ﻿using Bibosio.WebApi.Modules.Todos.Models;
 
-namespace Bibosio.WebApi.Modules.Todos
+namespace Bibosio.WebApi.Modules.Todos.Interfaces
 {
     public interface ITodoService
     {

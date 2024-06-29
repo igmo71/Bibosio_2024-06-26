@@ -101,9 +101,9 @@ namespace Bibosio.WebApi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddSingleton<InMemoryMessageQueue>();
-            builder.Services.AddSingleton<IEventBus, EventBus>();
-            builder.Services.AddHostedService<IntegrationEventProcessorJob>();
+            builder.Services.AddSingleton<IEventChannel, AppEventChannel>();
+            builder.Services.AddSingleton<IEventBus, AppEventBus>();
+            builder.Services.AddHostedService<AppEventDispatcher>();
 
             TodoModule.Register(builder.Services, builder.Configuration);
 
