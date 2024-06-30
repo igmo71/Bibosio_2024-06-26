@@ -1,6 +1,8 @@
 ﻿using Bibosio.WebApi.Interfaces;
 using Bibosio.WebApi.Modules.Todos.Data;
 using Bibosio.WebApi.Modules.Todos.EventBus;
+using Bibosio.WebApi.Modules.Todos.EventHandlers;
+using Bibosio.WebApi.Modules.Todos.EventHandlers.Handlers;
 using Bibosio.WebApi.Modules.Todos.Interfaces;
 using Bibosio.WebApi.Modules.Todos.Models;
 using Bibosio.WebApi.Modules.Todos.Services;
@@ -18,10 +20,14 @@ namespace Bibosio.WebApi.Modules.Todos
                 .EnableSensitiveDataLogging()
                 );
             services.AddScoped<ITodoService, TodoService>();
+
+            services.AddSingleton<ITodoEventChannel, TodoEventChannel>();
+            services.AddSingleton<ITodoEventBus, TodoEventBus>();
+            services.AddHostedService<TodoEventDispatcher>();
             
-            services.AddSingleton<ITodoEventChannel,TodoEventChannel>();
-            services.AddSingleton<ITodoEventBus,TodoEventBus>();
-            services.AddHostedService<TodoEventDispatcher> ();
+            services.AddHostedService<TodoEventHandler>();
+            services.AddSingleton<TodoCreatedEventHandler>();
+            services.AddSingleton<TodoUpdatedEventHandler>();
 
 
             services.AddSingleton<TodoCounter>();
@@ -36,7 +42,7 @@ namespace Bibosio.WebApi.Modules.Todos
 
             todoGroup.MapGet("/", async (ITodoService _todoService) => await _todoService.GetAll());
             todoGroup.MapGet("/complete", async (ITodoService _todoService) => await _todoService.GetComplete());
-            todoGroup.MapGet("/{id}", async(int id, ITodoService _todoService) => await _todoService.Get(id));
+            todoGroup.MapGet("/{id}", async (int id, ITodoService _todoService) => await _todoService.Get(id));
             todoGroup.MapPost("/", async (Todo todo, ITodoService _todoService) => await _todoService.Create(todo));
             todoGroup.MapPut("/{id}", async (int id, Todo todo, ITodoService _todoService) => await _todoService.Update(id, todo));
             todoGroup.MapDelete("/{id}", async (int id, ITodoService _todoService) => await _todoService.Delete(id));

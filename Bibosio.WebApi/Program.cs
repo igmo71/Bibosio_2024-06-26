@@ -107,13 +107,12 @@ namespace Bibosio.WebApi
             builder.Services.AddSingleton<IEventBus, AppEventBus>();
             builder.Services.AddHostedService<AppEventDispatcher>();
 
-            TodoEventDispatcher.TodoCreated += async (object? sender, TodoCreatedEvent e) => await TodoCreatedHandle1(sender, e);
-            TodoEventDispatcher.TodoCreated += async (object? sender, TodoCreatedEvent e) => await TodoCreatedHandle2(sender, e);
-            TodoEventDispatcher.TodoUpdated += async(object? sender, TodoUpdatedEvent e) => await TodoUpdatedHandle(sender, e);
-
-
 
             TodoModule.Register(builder.Services, builder.Configuration);
+
+            //TodoEventDispatcher.TodoCreated += async (object? sender, TodoCreatedEvent e) => await TodoCreatedHandle1(sender, e);
+            //TodoEventDispatcher.TodoCreated += async (object? sender, TodoCreatedEvent e) => await TodoCreatedHandle2(sender, e);
+            //TodoEventDispatcher.TodoUpdated += async (object? sender, TodoUpdatedEvent e) => await TodoUpdatedHandle(sender, e);
 
             var app = builder.Build();
 
@@ -130,25 +129,25 @@ namespace Bibosio.WebApi
             app.Run();
         }
 
-        private static async Task TodoCreatedHandle1(object? sender, TodoCreatedEvent e)
-        {
-            await Task.Delay(1000);
-            Log.Debug("{Method} {@TodoCreatedEvent} ", nameof(TodoCreatedHandle1), e);
-            await Task.Delay(1000);
-        }
+        // Example
+        //private static async Task TodoCreatedHandle1(object? sender, TodoCreatedEvent e)
+        //{
+        //    await Task.Delay(1000);
+        //    Log.Debug("{Object} {Method} {@TodoCreatedEvent}", nameof(Program), nameof(TodoCreatedHandle1), e);
+        //    await Task.Delay(1000);
+        //}
 
-        private static async Task TodoCreatedHandle2(object? sender, TodoCreatedEvent e)
-        {
-            await Task.Delay(1000);
-            Log.Debug("{Method} {@TodoCreatedEvent} ", nameof(TodoCreatedHandle2), e);
-            await Task.Delay(1000);
-        }
+        //private static async Task TodoCreatedHandle2(object? sender, TodoCreatedEvent e)
+        //{
+        //    await Task.Delay(1000);
+        //    Log.Debug("{Object} {Method} {@TodoCreatedEvent} ", nameof(Program), nameof(TodoCreatedHandle2), e);
+        //    await Task.Delay(1000);
+        //}
 
-
-        private static async Task TodoUpdatedHandle(object? sender, TodoUpdatedEvent e)
-        {
-            await Task.Delay(1000);
-            Log.Debug("{Method} {@TodoUpdatedEvent} {@Sender}", nameof(TodoUpdatedHandle), e, sender);
-        }
+        //private static async Task TodoUpdatedHandle(object? sender, TodoUpdatedEvent e)
+        //{
+        //    await Task.Delay(1000);
+        //    Log.Debug("{Object} {Method} {@TodoUpdatedEvent}", nameof(Program), nameof(TodoUpdatedHandle), e);
+        //}
     }
 }

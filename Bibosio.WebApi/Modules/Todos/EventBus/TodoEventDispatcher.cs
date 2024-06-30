@@ -1,18 +1,20 @@
-﻿using Bibosio.WebApi.Interfaces;
-using Bibosio.WebApi.Modules.Todos.EventBus.Events;
+﻿using Bibosio.WebApi.Modules.Todos.EventBus.Events;
 using Bibosio.WebApi.Modules.Todos.Interfaces;
 
 namespace Bibosio.WebApi.Modules.Todos.EventBus
 {
     public class TodoEventDispatcher : BackgroundService
     {
-        private readonly ITodoEventChannel _eventChannel;
-        private readonly ILogger<TodoEventDispatcher> _logger;
-
         public static event EventHandler<TodoCreatedEvent>? TodoCreated;
         public static event EventHandler<TodoUpdatedEvent>? TodoUpdated;
 
-        public TodoEventDispatcher(ITodoEventChannel eventChannel, ILogger<TodoEventDispatcher> logger)
+        private readonly ITodoEventChannel _eventChannel;
+        private readonly ILogger<TodoEventDispatcher> _logger;
+
+        public TodoEventDispatcher(
+            ITodoEventChannel eventChannel, 
+            ILogger<TodoEventDispatcher> logger
+            )
         {
             _eventChannel = eventChannel;
             _logger = logger;
@@ -42,7 +44,6 @@ namespace Bibosio.WebApi.Modules.Todos.EventBus
                     _logger.LogError(ex, "{Message} {@IntegrationEventId}", ex.Message, integrationEvent);
                 }
             }
-
         }
 
         private async Task OnTodoCreated(TodoCreatedEvent todoCreatedEvent)

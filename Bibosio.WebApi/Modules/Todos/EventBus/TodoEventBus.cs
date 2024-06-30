@@ -11,13 +11,7 @@ namespace Bibosio.WebApi.Modules.Todos.EventBus
 
         public async Task PublishTodoCreated(Todo todo)
         {
-            var todoCreatedEvent = new TodoCreatedEvent
-            {
-                EventId = Guid.NewGuid(),
-                Id = todo.Id,
-                Name = todo.Name,
-                IsComplete = todo.IsComplete
-            };
+            var todoCreatedEvent = new TodoCreatedEvent(Guid.NewGuid(), todo);
             await PublishAsync(todoCreatedEvent);
         }
 

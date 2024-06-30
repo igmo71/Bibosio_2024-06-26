@@ -10,7 +10,7 @@ namespace Bibosio.WebApi.Common
             {
                 try
                 {
-                    await Task.Delay(2000);
+                    await Task.Delay(1000); // Remove in prod
 
                     // TODO: Publish Event
 
