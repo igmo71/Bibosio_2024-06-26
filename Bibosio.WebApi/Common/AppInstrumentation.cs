@@ -25,11 +25,12 @@ namespace Bibosio.WebApi.Common
 
         public Dictionary<string, object> Counters { get; set; }
 
-        public void AddCounter<T>(string counterName) where T : struct
+        public void CreateCounter<T>(string counterName) where T : struct
         {
             if (!Counters.ContainsKey(counterName))
             {
-                Counters.Add(counterName, Meter.CreateCounter<T>(counterName));
+                var counter = Meter.CreateCounter<T>(counterName);
+                Counters.Add(counterName, counter);
             }
         }
 

@@ -16,10 +16,7 @@ namespace Bibosio.WebApi.Modules.Todos.Services
 
         private readonly AppInstrumentation _appInstrumentation;
         private readonly ActivitySource _activitySource;
-        private readonly Meter _meter;
-        private readonly TodoCounter _counter;
-        private readonly Counter<long> _todoCreatedCounter;
-        private readonly string todoCreateCounterName = $"{nameof(Todo)}{nameof(Create)}Counter";
+        private readonly string todoCreatedCount = "todoCreatedCount";
 
         public TodoService(
             TodoDbContext dbContext,
@@ -34,16 +31,7 @@ namespace Bibosio.WebApi.Modules.Todos.Services
 
             _appInstrumentation = appInstrumentation;
             _activitySource = appInstrumentation.ActivitySource;
-            _meter = appInstrumentation.Meter;
-
-            _appInstrumentation.AddCounter<long>(todoCreateCounterName);
-
-            //if (!appInstrumentation.Counters.ContainsKey(todoCreateCounterName))
-            //    appInstrumentation.Counters.Add(todoCreateCounterName, _meter.CreateCounter<long>(todoCreateCounterName));
-
-
-            _counter = counter;
-            _todoCreatedCounter = appInstrumentation.TodoCreatedCounter;
+            _appInstrumentation.CreateCounter<int>(todoCreatedCount);
         }
 
         public async Task<IResult> Create(Todo todo)
@@ -53,16 +41,13 @@ namespace Bibosio.WebApi.Modules.Todos.Services
             _dbContext.Todos.Add(todo);
             await _dbContext.SaveChangesAsync();
 
-            //_counter.TodoCreatedCounter.Add(1);
-            //_todoCreatedCounter.Add(1);
-            (_appInstrumentation.Counters[todoCreateCounterName] as Counter<long>)?.Add(1);
+            ((Counter<int>)_appInstrumentation.Counters[todoCreatedCount])?.Add(1);
 
             _logger.LogDebug("{Method} {@Todo}", nameof(Create), todo);
 
             await _eventBus.PublishTodoCreated(todo);
 
             return TypedResults.Created($"/todoitems/{todo.Id}", todo);
-
         }
 
         public async Task<IResult> Delete(int id)

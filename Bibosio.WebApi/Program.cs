@@ -31,7 +31,7 @@ namespace Bibosio.WebApi
             builder.Services.AddOpenTelemetry()
                 .ConfigureResource(resourceBuilder => resourceBuilder
                     .AddService(serviceName))
-                .WithTracing(tracing => tracing
+                .WithTracing(tracerProviderBuilder => tracerProviderBuilder
                     .AddSource(activitySource.Name)
                     .AddSource(AppInstrumentation.ActivitySourceName)
                     .AddAspNetCoreInstrumentation()
@@ -46,7 +46,8 @@ namespace Bibosio.WebApi
                     }))
                 .WithMetrics(meterProviderBuilder => meterProviderBuilder
                     .AddMeter(AppInstrumentation.MeterName)
-                    //.AddAspNetCoreInstrumentation()
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
                     .AddConsoleExporter())
                 .WithLogging(logging =>
                 {
