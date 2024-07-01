@@ -48,7 +48,7 @@ namespace Bibosio.WebApi.Modules.Todos.EventBus
 
         private async Task OnTodoCreated(TodoCreatedEvent todoCreatedEvent)
         {
-            await Task.Delay(1000); // TODO: Remove in prod
+            await Task.Delay(1000); // TODO: Example. Remove in prod.
             _logger.LogDebug("{Method} {@TodoCreatedEvent}", nameof(OnTodoCreated), todoCreatedEvent);
 
             EventHandler<TodoCreatedEvent>? todoCreatedHandler = TodoCreated;
@@ -57,7 +57,7 @@ namespace Bibosio.WebApi.Modules.Todos.EventBus
 
         private async Task OnTodoUpdated(TodoUpdatedEvent todoUpdatedEvent)
         {
-            await Task.Delay(1000); // TODO: Remove in prod
+            await Task.Delay(1000); // TODO: Example. Remove in prod.
             _logger.LogDebug("{Method} {@TodoUpdatedEvent}", nameof(OnTodoUpdated), todoUpdatedEvent);
 
             EventHandler<TodoUpdatedEvent>? todoUpdatedHandler = TodoUpdated;

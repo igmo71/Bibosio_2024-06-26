@@ -16,7 +16,7 @@ namespace Bibosio.WebApi.Modules.Todos.EventHandlers.Handlers
 
         public async Task HandleAsync(TodoCreatedEvent integrationEvent)
         {
-            await Task.Delay(1000); // TODO: Remove in prod
+            await Task.Delay(1000); // TODO: Example. Remove in prod.
             _logger.LogDebug("{Object} {Method} {@TodoCreatedEvent}", nameof(TodoCreatedEventHandler), nameof(HandleAsync), integrationEvent);
         }
 

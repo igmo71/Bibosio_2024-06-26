@@ -39,15 +39,36 @@ namespace Bibosio.WebApi.Modules.Todos.Services
             using var activity = _activitySource.StartActivity("CreateTodoActivity");
 
             _dbContext.Todos.Add(todo);
-            await _dbContext.SaveChangesAsync();
 
-            ((Counter<int>)_appInstrumentation.Counters[todoCreatedCount])?.Add(1);
+            await _dbContext.SaveChangesAsync();
 
             _logger.LogDebug("{Method} {@Todo}", nameof(Create), todo);
 
             await _eventBus.PublishTodoCreated(todo);
 
+            ((Counter<int>)_appInstrumentation.Counters[todoCreatedCount])?.Add(1);
+
             return TypedResults.Created($"/todoitems/{todo.Id}", todo);
+        }
+
+        public async Task<IResult> Update(int id, Todo inputTodo)
+        {
+            using var activity = _activitySource.StartActivity("UpdateTodoActivity");
+
+            var todo = await _dbContext.Todos.FindAsync(id);
+
+            if (todo is null) return TypedResults.NotFound();
+
+            todo.Name = inputTodo.Name;
+            todo.IsComplete = inputTodo.IsComplete;
+
+            await _dbContext.SaveChangesAsync();
+
+            _logger.LogDebug("{Method} {@Todo}", nameof(Update), todo);
+
+            await _eventBus.PublishTodoUpdated(todo);
+
+            return TypedResults.NoContent();
         }
 
         public async Task<IResult> Delete(int id)
@@ -79,24 +100,6 @@ namespace Bibosio.WebApi.Modules.Todos.Services
         public async Task<IResult> GetComplete()
         {
             return TypedResults.Ok(await _dbContext.Todos.Where(t => t.IsComplete).ToListAsync());
-        }
-
-        public async Task<IResult> Update(int id, Todo inputTodo)
-        {
-            var todo = await _dbContext.Todos.FindAsync(id);
-
-            if (todo is null) return TypedResults.NotFound();
-
-            todo.Name = inputTodo.Name;
-            todo.IsComplete = inputTodo.IsComplete;
-
-            await _dbContext.SaveChangesAsync();
-
-            _logger.LogDebug("{Method} {@Todo}", nameof(Update), todo);
-
-            await _eventBus.PublishTodoUpdated(todo);
-
-            return TypedResults.NoContent();
         }
     }
 }

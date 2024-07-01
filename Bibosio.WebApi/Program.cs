@@ -1,15 +1,10 @@
 using Bibosio.WebApi.Common;
+using Bibosio.WebApi.Configure;
 using Bibosio.WebApi.Data;
 using Bibosio.WebApi.Interfaces;
 using Bibosio.WebApi.Modules.Todos;
 using Microsoft.EntityFrameworkCore;
-using OpenTelemetry.Exporter;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using Serilog;
-using System.Diagnostics;
 
 namespace Bibosio.WebApi
 {
@@ -23,71 +18,11 @@ namespace Bibosio.WebApi
 
             var builder = WebApplication.CreateBuilder(args);
 
-            string serviceName = builder.Environment.ApplicationName;
-            ActivitySource activitySource = new(serviceName);
+            builder.Services.ConfigureOpenTelemetry();
 
-            builder.Services.AddSingleton<AppInstrumentation>();
-
-            builder.Services.AddOpenTelemetry()
-                .ConfigureResource(resourceBuilder => resourceBuilder
-                    .AddService(serviceName))
-                .WithTracing(tracerProviderBuilder => tracerProviderBuilder
-                    .AddSource(activitySource.Name)
-                    .AddSource(AppInstrumentation.ActivitySourceName)
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddEntityFrameworkCoreInstrumentation()
-                    .AddConsoleExporter()
-                    .AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri("http://igmo-pc:5341/ingest/otlp/v1/traces");
-                        options.Protocol = OtlpExportProtocol.HttpProtobuf;
-                        options.Headers = "X-Seq-ApiKey=x4d4zxG37lHw9bSxP74B";
-                    }))
-                .WithMetrics(meterProviderBuilder => meterProviderBuilder
-                    .AddMeter(AppInstrumentation.MeterName)
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddConsoleExporter())
-                .WithLogging(logging =>
-                {
-                    logging
-                        .AddConsoleExporter()
-                        .AddOtlpExporter(exporterOptions =>
-                        {
-                            exporterOptions.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/logs");
-                            exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
-                            exporterOptions.Headers = "X-Seq-ApiKey=x4d4zxG37lHw9bSxP74B";
-                        });
-                })
-                ;
-
-            //builder.Services.AddLogging(logging => logging.AddOpenTelemetry(openTelemetryLoggerOptions =>
-            //{
-            //    openTelemetryLoggerOptions.SetResourceBuilder(
-            //        ResourceBuilder.CreateEmpty()
-            //            .AddService(serviceName)
-            //            .AddAttributes(new Dictionary<string, object>
-            //            {
-            //                ["deployment.environment"] = "development"
-            //            }));
-            //    openTelemetryLoggerOptions.IncludeScopes = true;
-            //    openTelemetryLoggerOptions.IncludeFormattedMessage = true;
-
-            //    openTelemetryLoggerOptions.AddOtlpExporter(exporter =>
-            //    {
-            //        exporter.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/logs");
-            //        exporter.Protocol = OtlpExportProtocol.HttpProtobuf;
-            //        exporter.Headers = "X-Seq-ApiKey=x4d4zxG37lHw9bSxP74B";
-            //    });
-            //}));
-
-            builder.Services.AddSerilog(options =>
-            {
-                options
+            builder.Services.AddSerilog(options => options
                     .ReadFrom.Configuration(builder.Configuration)
-                    .WriteTo.Seq(serverUrl: "http://igmo-pc:5341", apiKey: "x4d4zxG37lHw9bSxP74B");
-            });
+                    .WriteTo.Seq(serverUrl: "http://igmo-pc:5341", apiKey: "x4d4zxG37lHw9bSxP74B"));
 
             //builder.Services.AddSqlite<AppDbContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
             //builder.Services.AddSqlServer<AppDbContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -106,12 +41,7 @@ namespace Bibosio.WebApi
             builder.Services.AddSingleton<IEventBus, AppEventBus>();
             builder.Services.AddHostedService<AppEventDispatcher>();
 
-
             TodoModule.Register(builder.Services, builder.Configuration);
-
-            //TodoEventDispatcher.TodoCreated += async (object? sender, TodoCreatedEvent e) => await TodoCreatedHandle1(sender, e);
-            //TodoEventDispatcher.TodoCreated += async (object? sender, TodoCreatedEvent e) => await TodoCreatedHandle2(sender, e);
-            //TodoEventDispatcher.TodoUpdated += async (object? sender, TodoUpdatedEvent e) => await TodoUpdatedHandle(sender, e);
 
             var app = builder.Build();
 
@@ -127,26 +57,5 @@ namespace Bibosio.WebApi
 
             app.Run();
         }
-
-        // Example
-        //private static async Task TodoCreatedHandle1(object? sender, TodoCreatedEvent e)
-        //{
-        //    await Task.Delay(1000);
-        //    Log.Debug("{Object} {Method} {@TodoCreatedEvent}", nameof(Program), nameof(TodoCreatedHandle1), e);
-        //    await Task.Delay(1000);
-        //}
-
-        //private static async Task TodoCreatedHandle2(object? sender, TodoCreatedEvent e)
-        //{
-        //    await Task.Delay(1000);
-        //    Log.Debug("{Object} {Method} {@TodoCreatedEvent} ", nameof(Program), nameof(TodoCreatedHandle2), e);
-        //    await Task.Delay(1000);
-        //}
-
-        //private static async Task TodoUpdatedHandle(object? sender, TodoUpdatedEvent e)
-        //{
-        //    await Task.Delay(1000);
-        //    Log.Debug("{Object} {Method} {@TodoUpdatedEvent}", nameof(Program), nameof(TodoUpdatedHandle), e);
-        //}
     }
 }
