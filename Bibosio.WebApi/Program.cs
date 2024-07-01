@@ -2,8 +2,6 @@ using Bibosio.WebApi.Common;
 using Bibosio.WebApi.Data;
 using Bibosio.WebApi.Interfaces;
 using Bibosio.WebApi.Modules.Todos;
-using Bibosio.WebApi.Modules.Todos.EventBus;
-using Bibosio.WebApi.Modules.Todos.EventBus.Events;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
@@ -31,7 +29,7 @@ namespace Bibosio.WebApi
             builder.Services.AddSingleton<AppInstrumentation>();
 
             builder.Services.AddOpenTelemetry()
-                .ConfigureResource(resource => resource
+                .ConfigureResource(resourceBuilder => resourceBuilder
                     .AddService(serviceName))
                 .WithTracing(tracing => tracing
                     .AddSource(activitySource.Name)
@@ -46,7 +44,7 @@ namespace Bibosio.WebApi
                         options.Protocol = OtlpExportProtocol.HttpProtobuf;
                         options.Headers = "X-Seq-ApiKey=x4d4zxG37lHw9bSxP74B";
                     }))
-                .WithMetrics(metrics => metrics
+                .WithMetrics(meterProviderBuilder => meterProviderBuilder
                     .AddMeter(AppInstrumentation.MeterName)
                     //.AddAspNetCoreInstrumentation()
                     .AddConsoleExporter())
