@@ -1,4 +1,5 @@
 using Bibosio.WebApi.Common;
+using Bibosio.WebApi.Configure;
 using Bibosio.WebApi.Data;
 using Bibosio.WebApi.Interfaces;
 using Bibosio.WebApi.Modules.Todos;
@@ -17,32 +18,30 @@ namespace Bibosio.WebApi
 
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddSerilog(options =>
-            {
-                options.ReadFrom.Configuration(builder.Configuration);
-            });
-            Log.Information("Starting up");
+            builder.Services.ConfigureOpenTelemetry();
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-                    .EnableDetailedErrors()
-                    .EnableSensitiveDataLogging()
-                    //.LogTo(Log.Debug)
-                    ;
-            });
-            //builder.Services.AddSqlServer<AppDbContext>(connectionString);
+            builder.Services.AddSerilog(options => options
+                    .ReadFrom.Configuration(builder.Configuration)
+                    .WriteTo.Seq(serverUrl: "http://igmo-pc:5341", apiKey: "x4d4zxG37lHw9bSxP74B"));
+
             //builder.Services.AddSqlite<AppDbContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
+            //builder.Services.AddSqlServer<AppDbContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
+            builder.Services.AddDbContext<AppDbContext>(options => options
+                .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+                .EnableDetailedErrors()
+                .EnableSensitiveDataLogging()
+                //.LogTo(Log.Debug)
+                );
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddSingleton<InMemoryMessageQueue>();
-            builder.Services.AddSingleton<IEventBus, EventBus>();
-            builder.Services.AddHostedService<IntegrationEventProcessorJob>();
+            builder.Services.AddSingleton<IEventChannel, AppEventChannel>();
+            builder.Services.AddSingleton<IEventBus, AppEventBus>();
+            builder.Services.AddHostedService<AppEventDispatcher>();
 
-            TodoModule.Register(builder.Services);
+            TodoModule.Register(builder.Services, builder.Configuration);
 
             var app = builder.Build();
 
@@ -52,7 +51,7 @@ namespace Bibosio.WebApi
                 app.UseSwaggerUI();
             }
 
-            //app.UseSerilogRequestLogging();
+            app.UseSerilogRequestLogging();
 
             TodoModule.MapEndpoints(app);
 

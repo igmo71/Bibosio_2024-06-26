@@ -2,14 +2,22 @@
 
 namespace Bibosio.WebApi.Common
 {
-    internal sealed class EventBus(InMemoryMessageQueue queue, ILogger<EventBus> logger) : IEventBus
+    public abstract class EventBus : IEventBus
     {
-        public async Task PublishAsync<T>(T integrationEvent, CancellationToken cancellationToken = default) 
-            where T : class, IIntegrationEvent
+        protected readonly IEventChannel _eventChannel;
+        protected readonly ILogger<IEventBus> _logger;
+
+        public EventBus(IEventChannel eventChannel, ILogger<IEventBus> logger)
         {
-            await queue.Writer.WriteAsync(integrationEvent, cancellationToken);
-            logger.LogDebug("{Method} {@IntegrationEvent}", nameof(PublishAsync), integrationEvent);
+            _eventChannel = eventChannel;
+            _logger = logger;
+        }
+
+        public async Task PublishAsync<TEvent>(TEvent integrationEvent, CancellationToken cancellationToken = default) 
+            where TEvent : class, IIntegrationEvent
+        {
+            await _eventChannel.Writer.WriteAsync(integrationEvent, cancellationToken);
+            _logger.LogDebug("{Method} {@IntegrationEvent}", nameof(PublishAsync), integrationEvent);
         }
     }
-
 }
