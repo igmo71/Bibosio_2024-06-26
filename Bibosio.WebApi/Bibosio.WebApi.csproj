@@ -41,6 +41,7 @@
   <ItemGroup>
     <Folder Include="EventChannel\" />
     <Folder Include="Logs\" />
+    <Folder Include="Modules\Orders\" />
     <Folder Include="Modules\Todos\Data\Migrations\" />
     <Folder Include="Notification\" />
   </ItemGroup>
